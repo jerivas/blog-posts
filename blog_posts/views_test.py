@@ -1,3 +1,4 @@
+import pytest
 from playwright.sync_api import Page
 
 from .models import BlogPost
@@ -47,3 +48,16 @@ def test_update(page: Page, blog_post_factory):
     assert blog_post.name == "New name"
     assert blog_post.text == "New text"
     assert page.locator("h1").inner_text() == "New name"
+
+
+def test_delete(page: Page, blog_post_factory):
+    blog_post = blog_post_factory(author=page.user)
+
+    page.goto(blog_post.get_absolute_url())
+    page.click("text=Delete")
+    with page.expect_navigation():
+        page.click("input:text('Delete')")
+
+    with pytest.raises(BlogPost.DoesNotExist):
+        blog_post.refresh_from_db()
+    assert page.locator("h1").inner_text() == "Blog Posts"
