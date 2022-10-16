@@ -13,11 +13,34 @@ def test_list(page: Page, blog_post_factory):
     assert page.locator("h2").all_inner_texts() == [post3.name, post2.name, post1.name]
 
 
-def test_detail(page: Page, blog_post):
-    page.goto("/")
-    page.click(f"text={blog_post.name}")
+class TestDetail:
+    def test_anon(self, page: Page, blog_post):
+        page.context.clear_cookies()  # Log out
 
-    assert page.locator("h1").inner_text() == blog_post.name
+        page.goto("/")
+        page.click(f"text={blog_post.name}")
+
+        assert page.locator("h1").inner_text() == blog_post.name
+        assert not page.locator("text=Update").is_visible()
+        assert not page.locator("text=Delete").is_visible()
+
+    def test_non_author(self, page: Page, blog_post):
+        page.goto("/")
+        page.click(f"text={blog_post.name}")
+
+        assert page.locator("h1").inner_text() == blog_post.name
+        assert not page.locator("text=Update").is_visible()
+        assert not page.locator("text=Delete").is_visible()
+
+    def test_ok(self, page: Page, blog_post_factory):
+        blog_post = blog_post_factory(author=page.user)
+
+        page.goto("/")
+        page.click(f"text={blog_post.name}")
+
+        assert page.locator("h1").inner_text() == blog_post.name
+        assert page.locator("text=Update").is_visible()
+        assert page.locator("text=Delete").is_visible()
 
 
 class TestCreate:
