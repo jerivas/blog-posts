@@ -1,6 +1,7 @@
 import os
 
 import pytest
+from django.urls import reverse
 from playwright.sync_api import Browser, Page
 from pytest_factoryboy import register
 
@@ -8,6 +9,16 @@ from . import factories
 
 os.environ.setdefault("DJANGO_ALLOW_ASYNC_UNSAFE", "true")
 PLAYWRIGHT_TIMEOUT = float(os.getenv("PLAYWRIGHT_TIMEOUT", "3000"))
+
+
+@pytest.fixture
+def assert_login_redirect(db, client, settings):
+    def inner(*args, **kwargs):
+        url = reverse(*args, **kwargs)
+        response = client.get(url, follow=True)
+        assert response.redirect_chain == [(f"{settings.LOGIN_URL}?next={url}", 302)]
+
+    return inner
 
 
 @pytest.fixture

@@ -1,5 +1,4 @@
 import pytest
-from django.urls import reverse
 from playwright.sync_api import Page
 
 from .models import BlogPost
@@ -35,36 +34,42 @@ class TestCreate:
         assert blog_post.text == "I wrote some text"
         assert page.locator("h1").inner_text() == "Hello world!"
 
-    def test_login_redirect(self, client, settings):
-        url = reverse("blog_post_create")
-        response = client.get(url, follow=True)
-        assert response.redirect_chain == [(f"{settings.LOGIN_URL}?next={url}", 302)]
+    def test_login_redirect(self, assert_login_redirect):
+        assert_login_redirect("blog_post_create")
 
 
-def test_update(page: Page, blog_post_factory):
-    blog_post = blog_post_factory(author=page.user)
+class TestUpdate:
+    def test_ok(self, page: Page, blog_post_factory):
+        blog_post = blog_post_factory(author=page.user)
 
-    page.goto(blog_post.get_absolute_url())
-    page.click("text=Update")
-    page.fill("text=Name", "New name")
-    page.fill("text=Text", "New text")
-    with page.expect_navigation():
-        page.click("text=Save")
+        page.goto(blog_post.get_absolute_url())
+        page.click("text=Update")
+        page.fill("text=Name", "New name")
+        page.fill("text=Text", "New text")
+        with page.expect_navigation():
+            page.click("text=Save")
 
-    blog_post.refresh_from_db()
-    assert blog_post.name == "New name"
-    assert blog_post.text == "New text"
-    assert page.locator("h1").inner_text() == "New name"
-
-
-def test_delete(page: Page, blog_post_factory):
-    blog_post = blog_post_factory(author=page.user)
-
-    page.goto(blog_post.get_absolute_url())
-    page.click("text=Delete")
-    with page.expect_navigation():
-        page.click("input:text('Delete')")
-
-    with pytest.raises(BlogPost.DoesNotExist):
         blog_post.refresh_from_db()
-    assert page.locator("h1").inner_text() == "Blog Posts"
+        assert blog_post.name == "New name"
+        assert blog_post.text == "New text"
+        assert page.locator("h1").inner_text() == "New name"
+
+    def test_login_redirect(self, assert_login_redirect, blog_post):
+        assert_login_redirect("blog_post_update", args=(blog_post.pk,))
+
+
+class TestDelete:
+    def test_ok(self, page: Page, blog_post_factory):
+        blog_post = blog_post_factory(author=page.user)
+
+        page.goto(blog_post.get_absolute_url())
+        page.click("text=Delete")
+        with page.expect_navigation():
+            page.click("input:text('Delete')")
+
+        with pytest.raises(BlogPost.DoesNotExist):
+            blog_post.refresh_from_db()
+        assert page.locator("h1").inner_text() == "Blog Posts"
+
+    def test_login_redirect(self, assert_login_redirect, blog_post):
+        assert_login_redirect("blog_post_delete", args=(blog_post.pk,))
