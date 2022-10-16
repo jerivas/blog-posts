@@ -1,4 +1,5 @@
 import pytest
+from django.urls import reverse
 from playwright.sync_api import Page
 
 from .models import BlogPost
@@ -57,6 +58,14 @@ class TestUpdate:
     def test_login_redirect(self, assert_login_redirect, blog_post):
         assert_login_redirect("blog_post_update", args=(blog_post.pk,))
 
+    @pytest.mark.django_db
+    def test_non_author(self, client, user_factory, blog_post):
+        client.force_login(user_factory())
+
+        response = client.get(reverse("blog_post_update", args=(blog_post.pk,)))
+
+        assert response.status_code == 403
+
 
 class TestDelete:
     def test_ok(self, page: Page, blog_post_factory):
@@ -73,3 +82,11 @@ class TestDelete:
 
     def test_login_redirect(self, assert_login_redirect, blog_post):
         assert_login_redirect("blog_post_delete", args=(blog_post.pk,))
+
+    @pytest.mark.django_db
+    def test_non_author(self, client, user_factory, blog_post):
+        client.force_login(user_factory())
+
+        response = client.get(reverse("blog_post_delete", args=(blog_post.pk,)))
+
+        assert response.status_code == 403
