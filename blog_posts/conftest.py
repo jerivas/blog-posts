@@ -11,8 +11,26 @@ PLAYWRIGHT_TIMEOUT = float(os.getenv("PLAYWRIGHT_TIMEOUT", "3000"))
 
 
 @pytest.fixture
-def page(db, browser: Browser, live_server) -> Page:
-    page = browser.new_page(base_url=str(live_server))
+def page(db, browser: Browser, live_server, client, user_factory) -> Page:
+    """Start a Playwright page with a Django session already attached"""
+    user = user_factory()
+    client.force_login(user)
+    cookies = [
+        {
+            "name": k,
+            "value": v.value,
+            "path": "/",
+            "domain": "localhost",
+            "sameSite": "Lax",
+            "httpOnly": False,
+            "secure": False,
+        }
+        for k, v in client.cookies.items()
+    ]
+    page = browser.new_page(
+        storage_state={"cookies": cookies}, base_url=str(live_server)
+    )
+    page.user = user
     page.set_default_timeout(PLAYWRIGHT_TIMEOUT)
     page.set_default_navigation_timeout(PLAYWRIGHT_TIMEOUT)
     yield page
