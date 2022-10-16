@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block main %}
+    <header style="padding-inline: 0">
+        <nav style="margin-bottom: 0">
+            <h1>{{ blog_post.name }}</h1>
+            {% if blog_post.author == user %}
+                <ul>
+                    <li><a href="{% url 'blog_post_update' blog_post.pk %}"><i>Update</i></a></li>
+                    <li><a href="{% url 'blog_post_delete' blog_post.pk %}"><i>Delete</i></a></li>
+                </ul>
+            {% endif %}
+        </nav>
+    </header>
+    <p>
+        By {{ blog_post.author }}<br>
+        <time datetime="{{ blog_post.published_at|date:"c" }}">
+            {{ blog_post.published_at|timesince }} ago
+        </time>
+    </p>
+    {{ blog_post.text|linebreaks }}
+{% endblock main %}

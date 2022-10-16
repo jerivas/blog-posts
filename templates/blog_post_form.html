@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block main %}
+    <h1>{{ blog_post|yesno:"Update,Create" }} Blog Post</h1>
+    <form action="" method="POST">
+        {% csrf_token %}
+        {{ form.as_div }}
+        <input type="submit" value="Save">
+    </form>
+{% endblock main %}

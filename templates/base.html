@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" color-mode="user">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Posts</title>
+    <link rel="stylesheet" href="https://unpkg.com/mvp.css@1.11.0/mvp.css">
+    <style>
+        .filter-form {
+            border: 0;
+            box-shadow: none;
+            display: flex;
+            flex: 100%;
+            justify-content: center;
+            padding: 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header style="padding-bottom: 0">
+        <nav style="margin-bottom: 0">
+            <a href="/">✨ Blog Posts ✨</a>
+            <ul>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'blog_post_create' %}">➕ Publish</a></li>
+                    <li><a href="{% url 'password_change' %}">🔑 Change Password</a></li>
+                    <li><a href="{% url 'logout' %}?next=/">❌ Log Out</a></li>
+                {% else %}
+                    <li><a href="{% url 'login' %}?next={{ request.path }}">👤 Log In</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <main>{% block main %}{% endblock %}</main>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block main %}
+    <header>
+        <h1>Blog Posts</h1>
+    </header>
+
+    <section>
+        <form action="" class="filter-form">
+            {{ form.as_div }}
+            <noscript><input type="submit"></noscript>
+        </form>
+
+        {% for blog_post in blog_posts %}
+            <aside>
+                <h2>
+                    <a href="{{ blog_post.get_absolute_url }}">
+                      {{ blog_post.name }}
+                    </a>
+                </h2>
+                <p>
+                    <i>{{ blog_post.published_at|timesince }} ago</i><br>
+                    {{ blog_post.text|truncatechars:70 }}
+                </p>
+            </aside>
+        {% endfor %}
+    </section>
+
+    <script>
+        // Auto-submit the filter form on change
+        document.addEventListener('change', event => {
+            if (!event.target.matches('.filter-form select')) return
+            event.target.form.submit()
+        })
+    </script>
+{% endblock main %}
