@@ -1,18 +1,15 @@
 import os
 
-from django.contrib.auth.models import User
+from playwright.sync_api import Browser
 
-from .models import BlogPost
+from .factories import BlogPostFactory
 
 os.environ.setdefault("DJANGO_ALLOW_ASYNC_UNSAFE", "true")
 
 
-def test_list(live_server, browser):
+def test_list(live_server, browser: Browser):
     page = browser.new_page(base_url=str(live_server))
-    user = User.objects.create_user(username="demo")
-    post1 = BlogPost.objects.create(author=user, name="Post 1", text="Hello world")
-    post2 = BlogPost.objects.create(author=user, name="Post 2", text="Hello world")
-    post3 = BlogPost.objects.create(author=user, name="Post 3", text="Hello world")
+    post1, post2, post3 = BlogPostFactory.create_batch(3)
 
     page.goto("/")
 
