@@ -31,3 +31,19 @@ def test_create(page: Page):
     assert blog_post.name == "Hello world!"
     assert blog_post.text == "I wrote some text"
     assert page.locator("h1").inner_text() == "Hello world!"
+
+
+def test_update(page: Page, blog_post_factory):
+    blog_post = blog_post_factory(author=page.user)
+
+    page.goto(blog_post.get_absolute_url())
+    page.click("text=Update")
+    page.fill("text=Name", "New name")
+    page.fill("text=Text", "New text")
+    with page.expect_navigation():
+        page.click("text=Save")
+
+    blog_post.refresh_from_db()
+    assert blog_post.name == "New name"
+    assert blog_post.text == "New text"
+    assert page.locator("h1").inner_text() == "New name"
